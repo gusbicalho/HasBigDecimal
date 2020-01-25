@@ -150,10 +150,10 @@ divUsing rounding a b =
        HALF_DOWN -> if delta   <= 0 then quot else quot +  signum quot
        DOWN      -> quot
        FLOOR     -> if quot    >= 0 then quot else quot - 1
-       HALF_EVEN
-         | delta  > 0             -> quot + signum quot
-         | delta == 0 && odd quot -> quot + signum quot
-         | otherwise              -> quot
+       HALF_EVEN -> case (abs rem * 2) `Prelude.compare` abs b of
+         GT            -> quot + signum quot
+         EQ | odd quot -> quot + signum quot
+         _             -> quot
 
 -- | round a BigDecimal to 'n' digits applying the 'MathContext' 'mc'
 roundBD :: BigDecimal -> MathContext -> BigDecimal
