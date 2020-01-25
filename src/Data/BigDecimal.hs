@@ -141,16 +141,20 @@ divide (a, b) (rMode, prefScale) =
 divUsing :: RoundingMode -> Integer -> Integer -> Integer
 divUsing rounding a b =
   let (quot, rem) = quotRem a b
-      delta = (10 * abs rem `div` abs b) - 5
+      halfTest = (abs rem * 2) `Prelude.compare` abs b
   in case rounding of
        PRECISE   -> if rem     == 0 then quot else error "non-terminating decimal expansion"
        UP        -> if abs rem  > 0 then quot +  signum quot else quot
        CEILING   -> if abs rem  > 0 &&   quot >= 0 then quot + 1 else quot
-       HALF_UP   -> if delta   >= 0 then quot +  signum quot else quot
-       HALF_DOWN -> if delta   <= 0 then quot else quot +  signum quot
        DOWN      -> quot
        FLOOR     -> if quot    >= 0 then quot else quot - 1
-       HALF_EVEN -> case (abs rem * 2) `Prelude.compare` abs b of
+       HALF_UP   -> case halfTest of
+         LT -> quot
+         _  -> quot + signum quot
+       HALF_DOWN -> case halfTest of
+         GT -> quot + signum quot
+         _  -> quot
+       HALF_EVEN -> case halfTest of
          GT            -> quot + signum quot
          EQ | odd quot -> quot + signum quot
          _             -> quot
